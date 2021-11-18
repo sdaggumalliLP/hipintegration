@@ -154,7 +154,17 @@
         <p class="lead">Cover is a one-page template for building simple and beautiful home pages. Download, edit the text, and add your own fullscreen background photo to make it your own.</p>
         <p class="lead">
           <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
-          <div id="chatBtn">Chat Now</div>
+          <div class="row">
+            <div class="col-lg-3 mb-5 mb-lg-0">
+              <div id="myChatBtn" class="icon-link">
+                <h3 class="resource-heading text-uppercase text-center text-blue">
+                  Live
+                  <br class="d-none d-lg-inline">
+                  Chat
+                </h3>
+              </div>
+            </div>
+          </div>
         </p>
       </main>
 
@@ -172,5 +182,53 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+      var LP_ENGAGEMENT_ID = '3579840730';
+
+      function waitForTaglet(name, callback) {
+        console.log('wait');
+
+        if (window.lpTag) {
+          var taglet = lpTag && lpTag.taglets && lpTag.taglets[name];
+
+          if (taglet) {
+            console.log("Taglet " + name + " is already present. No need to wait.");
+            callback(taglet);
+          } else {
+            lpTag.events.bind('LPTAG', 'TAGLET_STARTED', function (event) {
+              if (event.name == name) {
+                console.log("Taglet " + name + " has just been started. Finished waiting.");
+                callback(lpTag.taglets[name]);
+              }
+            });
+          }
+        }
+      }
+
+      function lpChatHandler(data, eventInfo) {
+        console.log("lpChatHandler", data);
+
+        if (data.state === 'initialised') {
+          var chatButton = document.querySelector('#myChatBtn');
+          console.log("adding chat handler", chatButton);
+          chatButton.addEventListener('click', function (e) {
+            console.log('Chat click');
+            e.stopPropagation();
+            lpTag.taglets.rendererStub.click(LP_ENGAGEMENT_ID);
+          });
+        }
+      }
+
+      waitForTaglet("lpUnifiedWindow", function (lpUnifiedWindow) {
+        console.log("binding click handler", lpUnifiedWindow, lpTag);
+        lpTag.events.bind('lpUnifiedWindow', 'state', lpChatHandler);
+      });
+      $('#myChatBtn').on('click', function (e) {
+        console.log('Chat click2', LP_ENGAGEMENT_ID, lpTag);
+        e.preventDefault();
+        lpTag.taglets.rendererStub.click(LP_ENGAGEMENT_ID);
+      });
+      window.LP_ENGAGEMENT_ID = LP_ENGAGEMENT_ID;
+    </script>
   </body>
 </html>
